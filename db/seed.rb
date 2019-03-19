@@ -2,26 +2,25 @@
 require "sqlite3"
 require "csv"
 require "pry"
+require_relative '../config/environment'
 # require_relative "../daily_show_guests.csv"
 
-db = SQLite3::Database.new "daily_show_db.db"
-binding.pry
-# Create a database
-rows = db.execute <<-SQL
-  create table daily_show_guests (
-    year INTEGER,
+DB.execute("DROP TABLE IF EXISTS daily_show_guests")
+# Create a table
+row = DB.execute <<-SQL
+  CREATE TABLE daily_show_guests (
+    year TEXT,
     occupation TEXT,
     show_date TEXT,
-    group TEXT,
+    type TEXT,
     guest_list TEXT
   );
 SQL
 
-csv = daily_show_guests.csv
-# CSV
+csv = "../daily_show_guests.csv"
 
-CSV.parse(csv, headers: true) do |row|
-  db.execute "insert into users values ( ?, ? )", row.fields # equivalent to: [row['name'], row['age']]
+# Seed DB from CSV
+CSV.foreach(csv, headers: true) do |row|
+  DB.execute "INSERT INTO daily_show_guests(year, occupation, show_date, type, guest_list) VALUES (?,?,?,?,?)", row.fields # equivalent to: [row['name'], row['age']]
 end
-
-db.execute( "select * from daily_show_guests" ) # => [["ben", 12], ["sally", 39]]
+DB.execute( "select * from daily_show_guests")
